@@ -95,12 +95,20 @@ function req(api, cb) {
 	xhttp.send();
 }
 
+function pad(n, p) {
+	n = n+""
+	while(n.length < p) {
+		n = "0"+n
+	}
+	return n
+}
+
 function formatDate(date) {
 	if (!date) {
 		date = new Date();
 	}
 
-	return `0${date.getDate()}-0${(date.getMonth() + 1)}-${date.getYear() + 1900}`
+	return `${pad(date.getDate(), 2)}-${pad(date.getMonth() + 1, 2)}-${date.getYear() + 1900}`
 }
 
 function parseDate(d) {
