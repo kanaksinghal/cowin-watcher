@@ -15,10 +15,10 @@ var bookedSlots = []
 var interval = 5 * 1000
 var intervalRunner
 
-// NOTE: THIS CHANGES ONLY ONCE IN FIVE SECONDS
+// NOTE: THIS VALUE CHANGES ONLY ONCE IN FIVE SECONDS
 // FOR ANYBODY POLLING THE COWIN APIS, I RECOMMEND
-// USING THIS COEFFICIENT LOGIC SO THAT EACH UNIQUE
-// REQUEST FROM EACH CLIENT DOESN'T BOMBARD THE SERVER.
+// USING THIS COEFFICIENT LOGIC SO THAT WE ALL ARE IN SYNC
+// & EACH UNIQUE REQUEST FROM EACH CLIENT DOESN'T BOMBARD THE SERVER.
 function cacheCoefficient() {
 	var d = Date.now() / 1000
 	return d - d % 5
@@ -153,7 +153,7 @@ function findSlots() {
 			bDate = parseDate(b.session.date)
 			return (aDate < bDate) ? -1 : (aDate > bDate ? 1 : 0);
 		})
-		document.getElementById("summary").innerText = `Centers: ${data.centers.length} | Total available vaccines: ${totalSlots}`;
+		document.getElementById("summary").innerText = `Total centers in area: ${data.centers.length} | Total available vaccines: ${totalSlots}`;
 		renderSlots()
 	})
 }
