@@ -55,7 +55,7 @@
                         aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="ageGroup" id="radioAgeAll" autocomplete="off"
                             checked value="0">
-                        <label class="btn btn-outline-primary" for="radioAgeAll">All</label>
+                        <label class="btn btn-outline-primary" for="radioAgeAll">Any</label>
 
                         <input type="radio" class="btn-check" name="ageGroup" id="radioAge18yr" autocomplete="off"
                             value="18">
@@ -72,7 +72,7 @@
                         aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="brand" id="radioBrandAll" autocomplete="off" checked
                             value="">
-                        <label class="btn btn-outline-primary" for="radioBrandAll">All</label>
+                        <label class="btn btn-outline-primary" for="radioBrandAll">Any</label>
 
                         <input type="radio" class="btn-check" name="brand" id="radioBrandCovishield" autocomplete="off"
                             value="COVISHIELD">
@@ -89,7 +89,7 @@
                         aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="cost" id="radioCostAll" autocomplete="off" checked
                             value="">
-                        <label class="btn btn-outline-primary" for="radioCostAll">All</label>
+                        <label class="btn btn-outline-primary" for="radioCostAll">Any</label>
 
                         <input type="radio" class="btn-check" name="cost" id="radioCostFree" autocomplete="off"
                             value="Free">
@@ -112,20 +112,22 @@
                     <span id="summary"></span>
                 </p>
 
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Vaccines</th>
-                            <th>Date</th>
-                            <th width="300">Center</th>
-                            <th>Age</th>
-                            <th>Brand</th>
-                            <th>Free/Paid</th>
-                        </tr>
-                    </thead>
-                    <tbody id="availableSlots" class="table-success"></tbody>
-                    <tbody id="bookedSlots"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Vaccines</th>
+                                <th>Date</th>
+                                <th width="300">Center</th>
+                                <th>Age</th>
+                                <th>Brand</th>
+                                <th>Free/Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody id="availableSlots" class="table-success"></tbody>
+                        <tbody id="bookedSlots"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 

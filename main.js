@@ -118,7 +118,7 @@ function parseDate(d) {
 function findSlots() {
 	var url;
 	if (conf.districtOrZip == "zip") {
-		if (!zipCodeInput.value) return;
+		if (!zipCodeInput.value || zipCodeInput.value.length < 6) return;
 		url = apiSlotsByZip(zipCodeInput.value)
 	} else {
 		if (!districtSelector.value) return;
@@ -178,7 +178,7 @@ function insertRows(tbodyElem) {
 		newRow.insertCell().innerHTML = slotData.session.available_capacity;
 		newRow.insertCell().innerHTML = slotData.session.date;
 		newRow.insertCell().innerHTML = `${slotData.center.name}<br><small class="text-muted">${slotData.center.pincode} | ${slotData.center.address}</small>`;
-		newRow.insertCell().innerHTML = slotData.session.min_age_limit;
+		newRow.insertCell().innerHTML = `${slotData.session.min_age_limit}yr+`;
 		newRow.insertCell().innerHTML = slotData.session.vaccine;
 		newRow.insertCell().innerHTML = slotData.center.fee_type;
 	}
