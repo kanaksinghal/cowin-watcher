@@ -16,11 +16,10 @@
         <h1 class="display-1 mt-5">CoWin Watcher</h1>
         <p>A tool to quickly navigate and continuously watch <a href="https://www.cowin.gov.in/home" target="_blank">cowin.gov.in</a> website
             for vaccine availability</p>
-        <p>For automatic mobile alerts, use my flow "CoWin Watcher India" in community section of <a href="https://play.google.com/store/apps/details?id=com.llamalab.automate">Automate App</a></p>
 
         <div class="row">
             <div class="col-lg-4">
-                <div class="mb-3">
+                <!-- <div class="mb-3">
                     <label class="form-label">Search by</label>
                     <div class="btn-group form-control-plaintext" role="group"
                         aria-label="Basic radio toggle button group">
@@ -32,22 +31,22 @@
                             value="district">
                         <label class="btn btn-outline-primary" for="radioDistrict">District</label>
                     </div>
-                </div>
-                <div class="mb-3 districtFields" hidden>
+                </div> -->
+                <div class="mb-3 districtFields">
                     <label class="form-label">State</label>
                     <select class="form-control" id="stateSelector">
                         <option value=""> -- select state -- </option>
                     </select>
                 </div>
-                <div class="mb-3 districtFields" hidden>
+                <div class="mb-3 districtFields">
                     <label class="form-label">District</label>
                     <select class="form-control" id="districtSelector">
                         <option value=""> -- select district -- </option>
                     </select>
                 </div>
                 <div class="mb-3 zipFields">
-                    <label class="form-label">Zip Code</label>
-                    <input type="number" class="form-control" id="zipCodeInput">
+                    <label class="form-label">Pincodes comma-separated values (optional)</label>
+                    <textarea class="form-control" id="zipCodeInput"></textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Age group</label>
@@ -101,9 +100,10 @@
                     </div>
                 </div>
 
-                <p>Developed by: <a href="https://www.linkedin.com/in/kanak-singhal-367634b4/" target="_blank">Kanak Singhal</a></p>
             </div>
             <div class="col-lg-8">
+                <p>For fastest automatic mobile alerts, install the <a href="https://play.google.com/store/apps/details?id=com.llamalab.automate">Automate App</a> and run the flow "<b>CoWin Watcher India</b>" from community section</p>
+
                 <p>
                     Vaccine availability 
                     <small id="liveIndicator" class="badge rounded-pill bg-success">Live <span class="spinner-border spinner-border-sm" role="status" hidden id="loader"></span></small>
@@ -117,7 +117,7 @@
                         <thead>
                             <tr>
                                 <th>Vaccines</th>
-                                <th>Date</th>
+                                <th width="110">Date</th>
                                 <th width="300">Center</th>
                                 <th>Age</th>
                                 <th>Brand</th>
@@ -128,8 +128,10 @@
                         <tbody id="bookedSlots"></tbody>
                     </table>
                 </div>
+
             </div>
         </div>
+        <p>Developed by: <a href="https://www.linkedin.com/in/kanak-singhal-367634b4/" target="_blank">Kanak Singhal</a></p>
 
     </div>
     <script src='main.js'></script>

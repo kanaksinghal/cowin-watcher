@@ -1,10 +1,10 @@
-var apiStates = "https://cdn-api.co-vin.in/api/v1/reports/v2/getPublicReports?state_id=&district_id=&date="
+var apiStates = "https://cdn-api.co-vin.in/api/v2/admin/location/states"
 var apiDistricts = (stateId) => (`https://cdn-api.co-vin.in/api/v2/admin/location/districts/${stateId}`)
 var apiSlotsByDistrict = (districtId) => (`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtId}&date=${formatDate()}:${cacheCoefficient()}`)
 var apiSlotsByZip = (zipCode) => (`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${zipCode}&date=${formatDate()}:${cacheCoefficient()}`)
 
-var conf = { districtOrZip: "zip" }
-var radioHandlers = {}
+var conf = { districtOrZip: "district" }
+var inputHandlers = {}
 var stateSelector = document.getElementById("stateSelector")
 var districtSelector = document.getElementById("districtSelector")
 var zipCodeInput = document.getElementById("zipCodeInput")
@@ -12,8 +12,10 @@ var availableSlotsTBody = document.getElementById("availableSlots")
 var bookedSlotsTBody = document.getElementById("bookedSlots")
 var availableSlots = []
 var bookedSlots = []
+var totalSlots, totalCenters
 var interval = 5 * 1000
 var intervalRunner
+var audio = new Audio("notification.mp3")
 
 // NOTE: THIS VALUE CHANGES ONLY ONCE IN FIVE SECONDS
 // FOR ANYBODY POLLING THE COWIN APIS, I RECOMMEND
@@ -24,9 +26,7 @@ function cacheCoefficient() {
 	return d - d % 5
 }
 
-stateSelector.addEventListener('change', (e) => {
-	if (!stateSelector.value) return;
-
+function loadDistricts(cb) {
 	req(apiDistricts(stateSelector.value), (s, b) => {
 		if (s != 200) return;
 
@@ -34,22 +34,32 @@ stateSelector.addEventListener('change', (e) => {
 		b.districts.forEach(s => {
 			districtSelector.add(new Option(s.district_name, s.district_id))
 		})
+
+		if(cb) cb()
 	})
+}
+
+stateSelector.addEventListener('change', (e) => {
+	if (!stateSelector.value) return;
+
+	conf.stateId = stateSelector.value
+	loadDistricts()
 })
 
 districtSelector.addEventListener('change', (e) => {
 	if (!districtSelector.value) return;
 
+	conf.districtId = districtSelector.value
 	findSlots()
+	audio.play()
 })
 
-zipCodeInput.addEventListener('change', (e) => {
-	if (!zipCodeInput.value) return;
-
-	findSlots()
+zipCodeInput.addEventListener('input', (e) => {
+	conf.zipCodes = zipCodeInput.value.replace(/ +/g, '').split(",").filter(z => (!!z))
+	renderSlots()
 })
 
-radioHandlers.districtOrZip = function (e) {
+inputHandlers.districtOrZip = function (e) {
 	conf.districtOrZip = e.target.value
 	if (e.target.value == "zip") {
 		setHidden(".districtFields", true)
@@ -61,17 +71,17 @@ radioHandlers.districtOrZip = function (e) {
 	findSlots()
 }
 
-radioHandlers.ageGroup = function (e) {
+inputHandlers.ageGroup = function (e) {
 	conf.ageGroup = e.target.value * 1
 	renderSlots()
 }
 
-radioHandlers.brand = function (e) {
+inputHandlers.brand = function (e) {
 	conf.brand = e.target.value
 	renderSlots()
 }
 
-radioHandlers.cost = function (e) {
+inputHandlers.cost = function (e) {
 	conf.cost = e.target.value
 	renderSlots()
 }
@@ -117,13 +127,13 @@ function parseDate(d) {
 
 function findSlots() {
 	var url;
-	if (conf.districtOrZip == "zip") {
-		if (!zipCodeInput.value || zipCodeInput.value.length < 6) return;
-		url = apiSlotsByZip(zipCodeInput.value)
-	} else {
-		if (!districtSelector.value) return;
-		url = apiSlotsByDistrict(districtSelector.value)
-	}
+	// if (conf.districtOrZip == "zip") {
+	// 	if (!zipCodeInput.value || zipCodeInput.value.length < 6) return;
+	// 	url = apiSlotsByZip(zipCodeInput.value)
+	// } else {
+	if (!districtSelector.value) return;
+	url = apiSlotsByDistrict(districtSelector.value)
+	// }
 
 	setHidden("#loader", false)
 	req(url, (status, data) => {
@@ -132,9 +142,11 @@ function findSlots() {
 
 		availableSlots = []
 		bookedSlots = []
-		var totalSlots = 0
+		totalSlots = 0
 		data.centers.forEach(c => {
+			if(!c.sessions) return;
 			c.sessions.forEach(s => {
+				s.available_capacity = Math.floor(s.available_capacity)
 				if (s.available_capacity > 0) {
 					availableSlots.push({ session: s, center: c })
 					totalSlots += s.available_capacity
@@ -144,17 +156,21 @@ function findSlots() {
 			})
 		})
 
+		totalCenters = data.centers.length
+
+		// sort by capacity
 		availableSlots.sort((a, b) => {
 			return b.session.available_capacity - a.session.available_capacity
 		})
 
+		// sort by date
 		bookedSlots.sort((a, b) => {
 			aDate = parseDate(a.session.date)
 			bDate = parseDate(b.session.date)
 			return (aDate < bDate) ? -1 : (aDate > bDate ? 1 : 0);
 		})
-		document.getElementById("summary").innerText = `Total centers in area: ${data.centers.length} | Total available vaccines: ${totalSlots}`;
-		renderSlots()
+
+		renderSlots();
 	})
 }
 
@@ -162,26 +178,57 @@ function renderSlots() {
 	availableSlotsTBody.innerHTML = ""
 	bookedSlotsTBody.innerHTML = ""
 
-	availableSlots.forEach(insertRows(availableSlotsTBody))
-	bookedSlots.forEach(insertRows(bookedSlotsTBody))
-}
-
-function insertRows(tbodyElem) {
-	return slotData => {
+	var filteredTotalCenters = []
+	var filteredTotalSlots = 0
+	availableSlots.concat(bookedSlots).forEach(slotData => {
 		if (conf.ageGroup && conf.ageGroup != slotData.session.min_age_limit) return;
 		if (conf.brand && conf.brand != slotData.session.vaccine) return;
 		if (conf.cost && conf.cost != slotData.center.fee_type) return;
+		if (conf.zipCodes && conf.zipCodes.length > 0 && conf.zipCodes.indexOf(slotData.center.pincode+"") == -1) return;
 
-		// Insert a row at the end of table
+		var tbodyElem = slotData.session.available_capacity ? availableSlotsTBody : bookedSlotsTBody;
 		var newRow = tbodyElem.insertRow();
-
-		newRow.insertCell().innerHTML = slotData.session.available_capacity;
+		newRow.insertCell().innerHTML = slotData.session.available_capacity ? slotData.session.available_capacity : "NA";
 		newRow.insertCell().innerHTML = slotData.session.date;
 		newRow.insertCell().innerHTML = `${slotData.center.name}<br><small class="text-muted">${slotData.center.pincode} | ${slotData.center.address}</small>`;
 		newRow.insertCell().innerHTML = `${slotData.session.min_age_limit}yr+`;
 		newRow.insertCell().innerHTML = slotData.session.vaccine;
 		newRow.insertCell().innerHTML = slotData.center.fee_type;
-	}
+
+		if(filteredTotalCenters.indexOf(slotData.center.center_id) == -1) filteredTotalCenters.push(slotData.center.center_id);
+		filteredTotalSlots += slotData.session.available_capacity;
+	})
+
+	document.getElementById("summary").innerText = `Centers: ${filteredTotalCenters.length} | Available vaccines: ${filteredTotalSlots}`;
+
+	if(filteredTotalSlots>0) audio.play();
+
+	saveConfig();
+}
+
+function saveConfig() {
+	localStorage.setItem("defaultConfig", JSON.stringify(conf))
+}
+
+function loadConfig() {
+	var defaultConfig = localStorage.getItem("defaultConfig")
+	if(!defaultConfig) return;
+
+	defaultConfig = JSON.parse(defaultConfig);
+
+	conf = defaultConfig || {}
+	stateSelector.value = conf.stateId
+	if(!conf.stateId) return;
+	loadDistricts(() => {
+		if(!conf.districtId) return;
+		districtSelector.value = conf.districtId
+		zipCodeInput.value = conf.zipCodes
+		document.querySelectorAll(`input[type=radio][name=ageGroup][value="${conf.ageGroup}"]`)[0].checked = true
+		document.querySelectorAll(`input[type=radio][name=brand][value="${conf.brand}"]`)[0].checked = true
+		document.querySelectorAll(`input[type=radio][name=cost][value="${conf.cost}"]`)[0].checked = true
+
+		findSlots()
+	})
 }
 
 function startWatcher() {
@@ -194,17 +241,18 @@ function startWatcher() {
 }
 
 document.querySelectorAll('input[type=radio]').forEach(
-	radio => radio.addEventListener('change', radioHandlers[radio.name])
+	input => input.addEventListener('change', inputHandlers[input.name])
 );
 
 req(apiStates, (status, body) => {
 	if (status != 200) return;
-	var states = body["getBeneficiariesGroupBy"]
+	var states = body["states"]
 
 	stateSelector.innerHTML = `<option value=""> -- select state -- </option>`
 	states.forEach(s => {
-		stateSelector.add(new Option(s.title, s.id))
+		stateSelector.add(new Option(s.state_name, s.state_id))
 	})
+	loadConfig()
 })
 
 window.addEventListener('focus', startWatcher);
