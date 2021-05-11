@@ -3,7 +3,7 @@ var apiDistricts = (stateId) => (`https://cdn-api.co-vin.in/api/v2/admin/locatio
 var apiSlotsByDistrict = (districtId) => (`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtId}&date=${formatDate()}:${cacheCoefficient()}`)
 var apiSlotsByZip = (zipCode) => (`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${zipCode}&date=${formatDate()}:${cacheCoefficient()}`)
 
-var conf = { districtOrZip: "district" }
+var conf = { districtOrZip: "district", zipCodes: [], ageGroup: '', brand: '', cost: '' }
 var inputHandlers = {}
 var stateSelector = document.getElementById("stateSelector")
 var districtSelector = document.getElementById("districtSelector")
@@ -222,10 +222,10 @@ function loadConfig() {
 	loadDistricts(() => {
 		if(!conf.districtId) return;
 		districtSelector.value = conf.districtId
-		zipCodeInput.value = conf.zipCodes
-		document.querySelectorAll(`input[type=radio][name=ageGroup][value="${conf.ageGroup}"]`)[0].checked = true
-		document.querySelectorAll(`input[type=radio][name=brand][value="${conf.brand}"]`)[0].checked = true
-		document.querySelectorAll(`input[type=radio][name=cost][value="${conf.cost}"]`)[0].checked = true
+		if(conf.zipCodes && conf.zipCodes instanceof Array) zipCodeInput.value = conf.zipCodes.join(",")
+		document.querySelectorAll(`input[type=radio][name=ageGroup][value="${conf.ageGroup||'0'}"]`)[0].checked = true
+		document.querySelectorAll(`input[type=radio][name=brand][value="${conf.brand||''}"]`)[0].checked = true
+		document.querySelectorAll(`input[type=radio][name=cost][value="${conf.cost||''}"]`)[0].checked = true
 
 		findSlots()
 	})
