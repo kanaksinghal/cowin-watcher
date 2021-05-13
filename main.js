@@ -8,6 +8,8 @@ var inputHandlers = {}
 var stateSelector = document.getElementById("stateSelector")
 var districtSelector = document.getElementById("districtSelector")
 var zipCodeInput = document.getElementById("zipCodeInput")
+var soundToggle = document.getElementById("soundToggle")
+var backgroundToggle = document.getElementById("backgroundToggle")
 var availableSlotsTBody = document.getElementById("availableSlots")
 var bookedSlotsTBody = document.getElementById("bookedSlots")
 var availableSlots = []
@@ -15,7 +17,9 @@ var bookedSlots = []
 var totalSlots, totalCenters
 var interval = 5 * 1000
 var intervalRunner
-var audio = new Audio("notification.mp3")
+var audioFake = {play: () => false}
+var audioReal; // init later when needed
+var audio = audioFake
 
 // NOTE: THIS VALUE CHANGES ONLY ONCE IN FIVE SECONDS
 // FOR ANYBODY POLLING THE COWIN APIS, I RECOMMEND
@@ -85,6 +89,18 @@ inputHandlers.cost = function (e) {
 	conf.cost = e.target.value
 	renderSlots()
 }
+
+soundToggle.addEventListener('change', (e) => {
+	// because some browsers need user to interact while playing the audio for the first time
+	if(e.target.checked) {
+		if(!audioReal) audioReal = new Audio("notification.mp3");
+
+		audio = audioReal
+	} else {
+		audio = audioFake
+	}
+	audio.play()
+})
 
 function setHidden(q, hidden) {
 	document.querySelectorAll(q).forEach(
@@ -259,6 +275,8 @@ window.addEventListener('focus', startWatcher);
 startWatcher()
 
 window.addEventListener('blur', () => {
+	if(backgroundToggle.checked) return; // keep running the watcher
+
 	setHidden("#offlineIndicator", false)
 	setHidden("#liveIndicator", true)
 
