@@ -108,7 +108,7 @@
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="backgroundToggle">
                         <label class="form-check-label" for="backgroundToggle">Keep watching in background</label>
-                        <small class="text-muted"><br>By default we stop watching when you switch to a different window<br>NOTE: your device may block this in some time</small>
+                        <small class="text-muted"><br>By default we stop watching when you switch to a different window<br>NOTE: your device may suspend this in some time</small>
                     </div>
                 </div>
             </div>
@@ -138,6 +138,9 @@
                                 <th>Free/Paid</th>
                             </tr>
                         </thead>
+                        <tbody id="infoSlots" class="table-info" hidden>
+                            <tr><td colspan="6">When slots are available, it will show up here on top...</td></tr>
+                        </tbody>
                         <tbody id="availableSlots" class="table-success"></tbody>
                         <tbody id="bookedSlots"></tbody>
                     </table>
