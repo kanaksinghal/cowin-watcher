@@ -97,8 +97,12 @@ soundToggle.addEventListener('change', (e) => {
 	if (e.target.checked) {
 		if (!audioReal) audioReal = new Audio("notification.mp3");
 
+		backgroundToggle.checked = true
+		backgroundToggle.disabled = false
 		audio = audioReal
 	} else {
+		backgroundToggle.checked = false
+		backgroundToggle.disabled = true
 		audio = audioFake
 	}
 	audio.play()
@@ -223,7 +227,7 @@ function renderSlots() {
 
 	if (filteredTotalSlots > 0) {
 		audio.play();
-		notifyUser(`${filteredTotalSlots} Vaccine slots found!`, `Book on cowin.gov.in before it's gone`)
+		// notifyUser(`${filteredTotalSlots} Vaccine slots found!`, `Book on cowin.gov.in before it's gone`)
 	}
 
 	saveConfig();
@@ -310,11 +314,11 @@ window.addEventListener('blur', () => {
 	window.clearInterval(intervalRunner)
 });
 
-if ("Notification" in window) {
-	if (Notification.permission != "granted" && Notification.permission != "denied") {
-		Notification.requestPermission()
-	}
-	else if (Notification.permission == "denied") {
-		// TODO: add ui info
-	}
-}
+// if ("Notification" in window) {
+// 	if (Notification.permission != "granted" && Notification.permission != "denied") {
+// 		Notification.requestPermission()
+// 	}
+// 	else if (Notification.permission == "denied") {
+// 		// TODO: add ui info
+// 	}
+// }
