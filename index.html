@@ -110,6 +110,23 @@
                     </div>
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Dose</label>
+                    <div class="btn-group form-control-plaintext" role="group"
+                        aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="dose" id="radioDoseAny" autocomplete="off" checked
+                            value="">
+                        <label class="btn btn-outline-primary" for="radioDoseAny">Any</label>
+
+                        <input type="radio" class="btn-check" name="dose" id="radioDoseFirst" autocomplete="off"
+                            value="_dose1">
+                        <label class="btn btn-outline-primary" for="radioDoseFirst">First</label>
+
+                        <input type="radio" class="btn-check" name="dose" id="radioDoseSecond" autocomplete="off"
+                            value="_dose2">
+                        <label class="btn btn-outline-primary" for="radioDoseSecond">Second</label>
+                    </div>
+                </div>
+                <div class="mb-3">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="soundToggle">
                         <label class="form-check-label" for="soundToggle">Toggle alert sound</label>
@@ -118,7 +135,7 @@
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="backgroundToggle" disabled>
                         <label class="form-check-label" for="backgroundToggle">Keep watching in background</label>
-                        <small class="text-muted"><br>By default we stop watching when you switch to a different window<br>NOTE: your device may suspend this in some time</small>
+                        <small class="text-muted"><br>NOTE: your device may suspend this in some time. Try refreshing the page once in a while</small>
                     </div>
                 </div>
             </div>
@@ -140,12 +157,12 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Vaccines</th>
+                                <th>Slots</th>
                                 <th width="110">Date</th>
                                 <th width="300">Center</th>
                                 <th>Age</th>
                                 <th>Brand</th>
-                                <th>Free/Paid</th>
+                                <th>Cost</th>
                             </tr>
                         </thead>
                         <tbody id="infoSlots" class="table-info" hidden>

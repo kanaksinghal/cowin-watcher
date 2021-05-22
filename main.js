@@ -3,7 +3,7 @@ var apiDistricts = (stateId) => (`https://cdn-api.co-vin.in/api/v2/admin/locatio
 var apiSlotsByDistrict = (districtId) => (`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtId}&date=${formatDate()}:${cacheCoefficient()}`)
 var apiSlotsByZip = (zipCode) => (`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${zipCode}&date=${formatDate()}:${cacheCoefficient()}`)
 
-var conf = { districtOrZip: "district", zipCodes: [], ageGroup: '', brand: '', cost: '' }
+var conf = { districtOrZip: "district", zipCodes: [], ageGroup: '', brand: '', cost: '', dose: '' }
 var inputHandlers = {}
 var stateSelector = document.getElementById("stateSelector")
 var districtSelector = document.getElementById("districtSelector")
@@ -23,6 +23,7 @@ var audioReal; // init later when needed
 var audio = audioFake;
 var windowActive = true;
 var notification;
+var monthNameAbbr = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 // NOTE: THIS VALUE CHANGES ONLY ONCE IN FIVE SECONDS
 // FOR ANYBODY POLLING THE COWIN APIS, I RECOMMEND
@@ -92,6 +93,11 @@ inputHandlers.cost = function (e) {
 	renderSlots()
 }
 
+inputHandlers.dose = function (e) {
+	conf.dose = e.target.value
+	renderSlots()
+}
+
 soundToggle.addEventListener('change', (e) => {
 	// because some browsers need user to interact while playing the audio for the first time
 	if (e.target.checked) {
@@ -147,6 +153,18 @@ function parseDate(d) {
 	return new Date(d.split("-").reverse().join("-"))
 }
 
+function daysDiff(d) {
+	if(typeof d == "string") {
+		d = parseDate(d)
+	}
+
+	var daysFromNow = Math.ceil((d.getTime()-Date.now())/(24*60*60*1000))
+	if (daysFromNow < 1) {
+		return 0
+	}
+	return daysFromNow
+}
+
 function findSlots() {
 	var url;
 	// if (conf.districtOrZip == "zip") {
@@ -168,7 +186,9 @@ function findSlots() {
 		data.centers.forEach(c => {
 			if (!c.sessions) return;
 			c.sessions.forEach(s => {
-				s.available_capacity = Math.floor(s.available_capacity)
+				s.available_capacity_dose1 = Math.floor(s.available_capacity_dose1)
+				s.available_capacity_dose2 = Math.floor(s.available_capacity_dose2)
+				s.available_capacity = s.available_capacity_dose1+s.available_capacity_dose2
 				if (s.available_capacity > 0) {
 					availableSlots.push({ session: s, center: c })
 					totalSlots += s.available_capacity
@@ -208,17 +228,28 @@ function renderSlots() {
 		if (conf.cost && conf.cost != slotData.center.fee_type) return;
 		if (conf.zipCodes && conf.zipCodes.length > 0 && conf.zipCodes.indexOf(slotData.center.pincode + "") == -1) return;
 
-		var tbodyElem = slotData.session.available_capacity ? availableSlotsTBody : bookedSlotsTBody;
+		var parsedDate = parseDate(slotData.session.date)
+		var daysFrmNow = daysDiff(parsedDate)
+		daysFrmNow = daysFrmNow==0?"Today":(daysFrmNow==1?"Tomorrow":`After ${daysFrmNow} days`)
+		var availableDose = slotData.session["available_capacity"+(conf.dose||'')]
+		var tbodyElem = availableDose ? availableSlotsTBody : bookedSlotsTBody;
 		var newRow = tbodyElem.insertRow();
-		newRow.insertCell().innerHTML = slotData.session.available_capacity ? slotData.session.available_capacity : "NA";
-		newRow.insertCell().innerHTML = slotData.session.date;
+		newRow.insertCell().innerHTML = (!slotData.session.available_capacity) ? "NA" : `<b>${availableDose}</b><br><small class="text-muted">F: ${slotData.session.available_capacity_dose1} | S: ${slotData.session.available_capacity_dose2} | T: ${slotData.session.available_capacity}</small>`;
+		newRow.insertCell().innerHTML = `${parsedDate.getDate()} ${monthNameAbbr[parsedDate.getMonth()]}<br><small class="text-muted">${daysFrmNow}</small>`;
 		newRow.insertCell().innerHTML = `${slotData.center.name}<br><small class="text-muted">${slotData.center.pincode} | ${slotData.center.address}</small>`;
 		newRow.insertCell().innerHTML = `${slotData.session.min_age_limit}yr+`;
 		newRow.insertCell().innerHTML = slotData.session.vaccine;
-		newRow.insertCell().innerHTML = slotData.center.fee_type;
+		var costCell = newRow.insertCell()
+		costCell.innerHTML = slotData.center.fee_type;
+		if(slotData.center.fee_type=="Paid") {
+			var fee = (slotData.center.vaccine_fees||[]).find(v => (v.vaccine==slotData.session.vaccine))
+			if(fee) {
+				costCell.innerHTML = `₹ ${fee.fee}`
+			}
+		}
 
 		if (filteredTotalCenters.indexOf(slotData.center.center_id) == -1) filteredTotalCenters.push(slotData.center.center_id);
-		filteredTotalSlots += slotData.session.available_capacity;
+		filteredTotalSlots += availableDose;
 	})
 
 	infoSlotsTBody.hidden = (filteredTotalSlots > 0)
@@ -253,6 +284,7 @@ function loadConfig() {
 		document.querySelectorAll(`input[type=radio][name=ageGroup][value="${conf.ageGroup || '0'}"]`)[0].checked = true
 		document.querySelectorAll(`input[type=radio][name=brand][value="${conf.brand || ''}"]`)[0].checked = true
 		document.querySelectorAll(`input[type=radio][name=cost][value="${conf.cost || ''}"]`)[0].checked = true
+		document.querySelectorAll(`input[type=radio][name=dose][value="${conf.dose || ''}"]`)[0].checked = true
 
 		findSlots()
 	})
