@@ -122,9 +122,9 @@ function setHidden(q, hidden) {
 }
 
 function toggleIndicator(status) {
-	setHidden("#offlineIndicator", status!="offline")
-	setHidden("#liveIndicator", status!="live")
-	setHidden("#failureIndicator", status!="failure")
+	setHidden("#offlineIndicator", status != "offline")
+	setHidden("#liveIndicator", status != "live")
+	setHidden("#failureIndicator", status != "failure")
 }
 
 function req(api, cb) {
@@ -148,6 +148,22 @@ function pad(n, p) {
 	return n
 }
 
+// addOrdinalSuffix Ref: https://stackoverflow.com/a/13627586/3666966
+function addOrdinalSuffix(i) {
+	var j = i % 10,
+		k = i % 100;
+	if (j == 1 && k != 11) {
+		return i + "st";
+	}
+	if (j == 2 && k != 12) {
+		return i + "nd";
+	}
+	if (j == 3 && k != 13) {
+		return i + "rd";
+	}
+	return i + "th";
+}
+
 function formatDate(date) {
 	if (!date) {
 		date = new Date();
@@ -161,11 +177,11 @@ function parseDate(d) {
 }
 
 function daysDiff(d) {
-	if(typeof d == "string") {
+	if (typeof d == "string") {
 		d = parseDate(d)
 	}
 
-	var daysFromNow = Math.ceil((d.getTime()-Date.now())/(24*60*60*1000))
+	var daysFromNow = Math.ceil((d.getTime() - Date.now()) / (24 * 60 * 60 * 1000))
 	if (daysFromNow < 1) {
 		return 0
 	}
@@ -204,7 +220,7 @@ function findSlots() {
 			c.sessions.forEach(s => {
 				s.available_capacity_dose1 = Math.floor(s.available_capacity_dose1)
 				s.available_capacity_dose2 = Math.floor(s.available_capacity_dose2)
-				s.available_capacity = s.available_capacity_dose1+s.available_capacity_dose2
+				s.available_capacity = s.available_capacity_dose1 + s.available_capacity_dose2
 				if (s.available_capacity > 0) {
 					availableSlots.push({ session: s, center: c })
 					totalSlots += s.available_capacity
@@ -246,20 +262,20 @@ function renderSlots() {
 
 		var parsedDate = parseDate(slotData.session.date)
 		var daysFrmNow = daysDiff(parsedDate)
-		daysFrmNow = daysFrmNow==0?"Today":(daysFrmNow==1?"Tomorrow":`After ${daysFrmNow} days`)
-		var availableDose = slotData.session["available_capacity"+(conf.dose||'')]
+		daysFrmNow = daysFrmNow == 0 ? "Today" : (daysFrmNow == 1 ? "Tomorrow" : `After ${daysFrmNow} days`)
+		var availableDose = slotData.session["available_capacity" + (conf.dose || '')]
 		var tbodyElem = availableDose ? availableSlotsTBody : bookedSlotsTBody;
 		var newRow = tbodyElem.insertRow();
 		newRow.insertCell().innerHTML = (!slotData.session.available_capacity) ? "NA" : `<b>${availableDose}</b><br><small class="text-muted">F: ${slotData.session.available_capacity_dose1} | S: ${slotData.session.available_capacity_dose2} | T: ${slotData.session.available_capacity}</small>`;
-		newRow.insertCell().innerHTML = `${parsedDate.getDate()} ${monthNameAbbr[parsedDate.getMonth()]}<br><small class="text-muted">${daysFrmNow}</small>`;
+		newRow.insertCell().innerHTML = `${addOrdinalSuffix(parsedDate.getDate())} ${monthNameAbbr[parsedDate.getMonth()]}<br><small class="text-muted">${daysFrmNow}</small>`;
 		newRow.insertCell().innerHTML = `${slotData.center.name}<br><small class="text-muted">${slotData.center.pincode} | ${slotData.center.address}</small>`;
 		newRow.insertCell().innerHTML = `${slotData.session.min_age_limit}yr+`;
 		newRow.insertCell().innerHTML = slotData.session.vaccine;
 		var costCell = newRow.insertCell()
 		costCell.innerHTML = slotData.center.fee_type;
-		if(slotData.center.fee_type=="Paid") {
-			var fee = (slotData.center.vaccine_fees||[]).find(v => (v.vaccine==slotData.session.vaccine))
-			if(fee) {
+		if (slotData.center.fee_type == "Paid") {
+			var fee = (slotData.center.vaccine_fees || []).find(v => (v.vaccine == slotData.session.vaccine))
+			if (fee) {
 				costCell.innerHTML = `₹ ${fee.fee}`
 			}
 		}
@@ -324,7 +340,7 @@ function notifyUser(title, body) {
 	else if (Notification.permission === "granted") {
 		if (!title) return;
 		if (notification) notification.close()
-		notification = new Notification(title, {body});
+		notification = new Notification(title, { body });
 	}
 }
 
