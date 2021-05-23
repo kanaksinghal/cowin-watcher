@@ -43,20 +43,20 @@
                     </div>
                 </div> -->
                 <div class="mb-3 districtFields">
-                    <label class="form-label">State</label>
+                    <label class="form-label">State <small class="text-muted">*Required</small></label>
                     <select class="form-control" id="stateSelector">
                         <option value=""> -- select state -- </option>
                     </select>
                 </div>
                 <div class="mb-3 districtFields">
-                    <label class="form-label">District</label>
+                    <label class="form-label">District <small class="text-muted">*Required</small></label>
                     <select class="form-control" id="districtSelector">
                         <option value=""> -- select district -- </option>
                     </select>
                 </div>
                 <div class="mb-3 zipFields">
-                    <label class="form-label">Pincodes comma-separated values (optional)</label>
-                    <textarea class="form-control" id="zipCodeInput"></textarea>
+                    <label class="form-label">Pin codes comma-separated values <small class="text-muted">Optional</small></label>
+                    <textarea class="form-control" id="zipCodeInput" placeholder="Pin codes in your district close to you. Eg: 411036,411028"></textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Age group</label>
@@ -135,47 +135,57 @@
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="backgroundToggle" disabled>
                         <label class="form-check-label" for="backgroundToggle">Keep watching in background</label>
-                        <small class="text-muted"><br>NOTE: your device may suspend this in some time. Try refreshing the page once in a while</small>
+                        <small class="text-muted"><br>NOTE: your device may suspend this in some time. Try my automate flow for this.</small>
                     </div>
                 </div>
             </div>
             <div class="col-lg-8">
-                <p>For fastest automatic mobile alerts, install the <a href="https://play.google.com/store/apps/details?id=com.llamalab.automate">Automate App</a> and run the flow "<b>CoWin Watcher India</b>" from community section.</p>
+                <p>For fastest automatic mobile alerts, install the <a href="https://play.google.com/store/apps/details?id=com.llamalab.automate">Automate App</a> and run the flow "<b>CoWin Watcher India</b>" from community section. (last update - v13 on 22nd May)</p>
 
-                <p>
-                    Vaccine availability 
-                    <small id="liveIndicator" class="badge rounded-pill bg-success">Live <span class="spinner-border spinner-border-sm" role="status" hidden id="loader"></span></small>
-                    <span id="offlineIndicator" hidden>
-                        <small class="badge rounded-pill bg-danger">Inactive</small>
-                        <small class="text-muted">Watcher stops when you switch to another window</small>
-                    </span>
-                    <br>
-                    <span id="summary"></span>
-                </p>
+                <div id="results" hidden>
+                    <p>
+                        Vaccine availability 
+                        <small id="liveIndicator" class="badge rounded-pill bg-success">Live <span class="spinner-border spinner-border-sm" role="status" hidden id="loader"></span></small>
+                        <span id="offlineIndicator" hidden>
+                            <small class="badge rounded-pill bg-danger">Inactive</small>
+                            <small class="text-muted">Watcher stops when you switch to another window</small>
+                        </span>
+                        <span id="failureIndicator" hidden>
+                            <small class="badge rounded-pill bg-warning">API Error</small>
+                            <small class="text-muted">Code: <span id="resultErrCode"></span> | We'll auto retry</small>
+                        </span>
+                        <br>
+                        <span id="summary"></span>
+                    </p>
 
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Slots</th>
-                                <th width="110">Date</th>
-                                <th width="300">Center</th>
-                                <th>Age</th>
-                                <th>Brand</th>
-                                <th>Cost</th>
-                            </tr>
-                        </thead>
-                        <tbody id="infoSlots" class="table-info" hidden>
-                            <tr><td colspan="6">When slots are available, it will show up here on top...</td></tr>
-                        </tbody>
-                        <tbody id="availableSlots" class="table-success"></tbody>
-                        <tbody id="bookedSlots"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Slots</th>
+                                    <th width="110">Date</th>
+                                    <th width="300">Center</th>
+                                    <th>Age</th>
+                                    <th>Brand</th>
+                                    <th>Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody id="infoSlots" class="table-info" hidden>
+                                <tr>
+                                    <td colspan="6">
+                                        Zero slots found matching your requirements. It'll show up here when available.<br>
+                                        <small class="text-muted">Meanwhile, please make sure the filters are rightly set</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tbody id="availableSlots" class="table-success"></tbody>
+                            <tbody id="bookedSlots"></tbody>
+                        </table>
+                    </div>
                 </div>
-
             </div>
         </div>
-        <p>Developed by: <a href="https://www.linkedin.com/in/kanak-singhal-367634b4/" target="_blank">Kanak Singhal</a></p>
+        <p>Developed by: <a href="https://www.linkedin.com/in/kanak-singhal-367634b4/" target="_blank">Kanak Singhal</a> | <a href="https://www.linkedin.com/pulse/bot-find-you-slot-kanak-singhal/" target="_blank">Blog</a></p>
 
     </div>
     <script src='main.js'></script>

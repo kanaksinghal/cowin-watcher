@@ -13,6 +13,7 @@ var backgroundToggle = document.getElementById("backgroundToggle")
 var availableSlotsTBody = document.getElementById("availableSlots")
 var bookedSlotsTBody = document.getElementById("bookedSlots")
 var infoSlotsTBody = document.getElementById("infoSlots")
+var resultErrCode = document.getElementById("resultErrCode")
 var availableSlots = []
 var bookedSlots = []
 var totalSlots, totalCenters
@@ -120,6 +121,12 @@ function setHidden(q, hidden) {
 	)
 }
 
+function toggleIndicator(status) {
+	setHidden("#offlineIndicator", status!="offline")
+	setHidden("#liveIndicator", status!="live")
+	setHidden("#failureIndicator", status!="failure")
+}
+
 function req(api, cb) {
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function () {
@@ -171,14 +178,23 @@ function findSlots() {
 	// 	if (!zipCodeInput.value || zipCodeInput.value.length < 6) return;
 	// 	url = apiSlotsByZip(zipCodeInput.value)
 	// } else {
-	if (!districtSelector.value) return;
+	if (!districtSelector.value) {
+		setHidden("#results", true)
+		return;
+	}
 	url = apiSlotsByDistrict(districtSelector.value)
 	// }
 
+	setHidden("#results", false)
+	toggleIndicator("live")
 	setHidden("#loader", false)
 	req(url, (status, data) => {
 		setHidden("#loader", true)
-		if (status != 200 || !data || !data.centers) return;
+		if (status != 200 || !data || !data.centers) {
+			resultErrCode.innerText = status || "No Internet"
+			toggleIndicator("failure")
+			return;
+		}
 
 		availableSlots = []
 		bookedSlots = []
@@ -291,9 +307,6 @@ function loadConfig() {
 }
 
 function startWatcher() {
-	setHidden("#offlineIndicator", true)
-	setHidden("#liveIndicator", false)
-
 	findSlots()
 	window.clearInterval(intervalRunner)
 	intervalRunner = window.setInterval(() => {
@@ -340,8 +353,7 @@ window.addEventListener('blur', () => {
 	windowActive = false;
 	if (backgroundToggle.checked) return; // keep running the watcher
 
-	setHidden("#offlineIndicator", false)
-	setHidden("#liveIndicator", true)
+	toggleIndicator("offline")
 
 	window.clearInterval(intervalRunner)
 });
